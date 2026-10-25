@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-dnf install -y httpd awscli curl
+dnf install -y httpd awscli
 systemctl enable --now httpd
 # Sync script is embedded here so first boot works without a public repository or access keys.
 cat > /usr/local/bin/sync-cv.sh <<'SYNC_SCRIPT'
@@ -39,7 +39,9 @@ cat > /etc/systemd/system/cv-sync.timer <<'EOF'
 Description=Sync CV every 5 minutes
 [Timer]
 OnBootSec=1min
-OnUnitActiveSec=5min
+OnCalendar=*:0/5
+Persistent=true
+AccuracySec=1s
 Unit=cv-sync.service
 [Install]
 WantedBy=timers.target

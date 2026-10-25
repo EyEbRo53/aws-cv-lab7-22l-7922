@@ -3,7 +3,7 @@
 **Student:** Hassan Yousaf  
 **Roll:** 22L-7922  
 **Email:** l227922@lhr.nu.edu.pk  
-**Region:** TODO — confirm the class region before deployment.
+**Region:** ap-southeast-2 (Sydney)
 
 ## Architecture
 
@@ -14,21 +14,31 @@ Browser ──HTTP──> EC2 (Apache, local copy of CV) ──IAM role──> p
 
 For the EC2 path, the browser connects to Apache on the instance, which serves a local copy of the CV synchronized from S3 every five minutes. For the Lambda path, the browser calls the public function URL and the function reads the requested object directly from private S3.
 
-## Live endpoints (fill after deployment)
-- EC2: TODO
-- Lambda: TODO
-- S3 object direct URL (should be AccessDenied): TODO
+## Live endpoints
+- EC2: http://16.176.169.190/
+- Lambda: https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/
+- Direct S3 object: https://cv-22l-7922.s3.amazonaws.com/site/index.html (HTTP 403)
 
-## Access denied test (paste actual EC2 shell output)
-```text
-TODO: On EC2 run: aws s3 rm s3://cv-22l-7922/site/style.css
-Paste the AccessDenied result here. Do not run a successful deletion.
-```
+## Access denied test
 
-## Last 10 sync log lines (paste actual EC2 output)
-```text
-TODO: sudo tail -n 10 /var/log/cv-sync.log
-```
+The following command was run on the EC2 instance:
+
+    aws s3 cp /tmp/denied-test.txt s3://cv-22l-7922/site/denied-test.txt
+
+Result: AccessDenied. The EC2 IAM role does not permit s3:PutObject.
+
+## EC2 synchronization
+
+The EC2 instance runs Apache and synchronizes its local CV files
+from private S3 using a systemd timer every five minutes.
+
+Recorded successful synchronization entries:
+
+    2026-10-25T17:23:14+00:00 OK: synced i-03da7b9c6666bf0a1
+    2026-10-25T17:31:29+00:00 OK: synced i-03da7b9c6666bf0a1
+    2026-10-25T17:32:03+00:00 OK: synced i-03da7b9c6666bf0a1
+
+See ec2-test-results.txt for the recorded test results.
 
 ## Written answers
 
@@ -51,7 +61,21 @@ The instance, its local web files, its public IP, and its web endpoint are lost.
 Run `./collect-evidence.sh cv-22l-7922 http://EC2_PUBLIC_IP https://LAMBDA_FUNCTION_URL` from a configured AWS CLI environment in the class region. Commit the resulting `evidence.txt`. **Do not fabricate evidence or commit credentials.**
 
 ## Sources and adaptation
-Assignment requirements: *Lab 7 - Basic App Deployment on AWS*, provided by instructor. Starter scripts and text generated with AI assistance; reviewed and adapted by student before submission. AWS deployment has not yet been performed.
+Assignment requirements: *Lab 7 - Basic App Deployment on AWS*, provided by instructor. Starter scripts and text generated with AI assistance; reviewed and adapted by student before submission. AWS deployment was completed and tested.
 
-## Before submitting
-Replace sample CV details in both `site/index.html` and `site/cv.pdf`. Fill the actual URLs, denied-output, and sync log above. Confirm the required region, tags, AWS budget, running endpoints, IAM permissions, and log retention. Keep services available until grading ends.
+## Deployment verification
+
+- EC2 and Lambda websites return HTTP 200.
+- HTML, CSS, and PDF are served successfully.
+- Unknown Lambda paths return HTTP 404.
+- Direct S3 object access returns HTTP 403.
+- EC2 security group has inbound port 80 only.
+- EC2 S3 write attempt returned AccessDenied.
+- Lambda CloudWatch log retention is seven days.
+- Evidence collected in evidence.txt.
+
+## GitHub repository
+
+https://github.com/EyEbRo53/aws-cv-lab7-22l-7922
+
+Keep the deployed services running until grading is complete.

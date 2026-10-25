@@ -1,2 +1,215 @@
-== NOT COLLECTED ==
-This is a starter placeholder. Run collect-evidence.sh in your AWS account and commit the generated evidence.txt before submission.
+== caller ==
+{
+    "UserId": "AROAUNAFBXGV6KIBR7YOY:249864a8-e061-70cf-3fe2-391310e94bdd",
+    "Account": "302805793195",
+    "Arn": "arn:aws:sts::302805793195:assumed-role/AccountFullAccessRole/249864a8-e061-70cf-3fe2-391310e94bdd"
+}
+== public-access ==
+{
+    "PublicAccessBlockConfiguration": {
+        "BlockPublicAcls": true,
+        "IgnorePublicAcls": true,
+        "BlockPublicPolicy": true,
+        "RestrictPublicBuckets": true
+    }
+}
+== versioning ==
+{
+    "Status": "Enabled"
+}
+== objects ==
+2026-10-25 18:56:04       2334 site/cv.pdf
+2026-10-25 18:56:03       1765 site/index.html
+2026-10-25 16:14:09        821 site/style.css
+== ec2-policy ==
+{
+    "RoleName": "cv-ec2-role-22l-7922",
+    "PolicyName": "CVSiteReadOnly",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "ReadSiteFiles",
+                "Effect": "Allow",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::cv-22l-7922/site/*"
+            },
+            {
+                "Sid": "ListOnlySitePrefix",
+                "Effect": "Allow",
+                "Action": "s3:ListBucket",
+                "Resource": "arn:aws:s3:::cv-22l-7922",
+                "Condition": {
+                    "StringEquals": {
+                        "s3:prefix": "site/"
+                    }
+                }
+            }
+        ]
+    }
+}
+== lambda-policy ==
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "AWSLambdaBasicExecutionRole",
+            "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        }
+    ]
+}
+{
+    "RoleName": "cv-lambda-role-22l-7922",
+    "PolicyName": "CVSiteReadOnly",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "ReadSiteFilesOnly",
+                "Effect": "Allow",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::cv-22l-7922/site/*"
+            }
+        ]
+    }
+}
+== security-group ==
+{
+    "SecurityGroups": [
+        {
+            "GroupId": "sg-098a49986d0e46e5f",
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "UserIdGroupPairs": [],
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": []
+                }
+            ],
+            "Tags": [
+                {
+                    "Key": "Owner",
+                    "Value": "22L-7922"
+                },
+                {
+                    "Key": "Course",
+                    "Value": "cloud"
+                }
+            ],
+            "VpcId": "vpc-039711142003429fa",
+            "SecurityGroupArn": "arn:aws:ec2:ap-southeast-2:302805793195:security-group/sg-098a49986d0e46e5f",
+            "OwnerId": "302805793195",
+            "GroupName": "cv-sg-22l-7922",
+            "Description": "HTTP access for CV website",
+            "IpPermissions": [
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": 80,
+                    "ToPort": 80,
+                    "UserIdGroupPairs": [],
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": []
+                }
+            ]
+        }
+    ]
+}
+== instance ==
+[
+    [
+        "i-03da7b9c6666bf0a1",
+        "t3.micro",
+        "required",
+        "arn:aws:iam::302805793195:instance-profile/cv-ec2-profile-22l-7922",
+        "16.176.169.190"
+    ]
+]
+== endpoints ==
+http://16.176.169.190/ status=200 content_type=text/html; charset=UTF-8
+http://16.176.169.190/style.css status=200 content_type=text/css
+http://16.176.169.190/cv.pdf status=200 content_type=application/pdf
+https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/ status=200 content_type=text/html; charset=utf-8
+https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/style.css status=200 content_type=text/css; charset=utf-8
+https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/cv.pdf status=200 content_type=application/pdf
+https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/anything status=404 content_type=text/html; charset=utf-8
+https://cv-22l-7922.s3.amazonaws.com/site/index.html status=403 content_type=application/xml
+== lambda-logs ==
+2026-10-25T18:07:40.678000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e INIT_START Runtime Version: python:3.12.mainlinev2.v43	Runtime Version ARN: arn:aws:lambda:ap-southeast-2::runtime:36aeb19f3326e129d9f096dea0a3c6a9ca8dce2610e62d2b2060747602d863ae
+2026-10-25T18:07:41.172000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: 07af39ad-39a9-4447-81fc-ea63523ca6a9 Version: $LATEST
+2026-10-25T18:07:41.493000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:41.493Z	07af39ad-39a9-4447-81fc-ea63523ca6a9	{"fn": "cv-func-22l-7922", "path": "/", "status": 200, "ms": 319.9}
+2026-10-25T18:07:41.508000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: 07af39ad-39a9-4447-81fc-ea63523ca6a9
+2026-10-25T18:07:41.508000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: 07af39ad-39a9-4447-81fc-ea63523ca6a9	Duration: 334.83 ms	Billed Duration: 826 ms	Memory Size: 128 MB	Max Memory Used: 95 MB	Init Duration: 490.36 ms
+2026-10-25T18:07:41.533000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: 4b162025-83dc-4acd-9166-a61a3842dca8 Version: $LATEST
+2026-10-25T18:07:41.557000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:41.557Z	4b162025-83dc-4acd-9166-a61a3842dca8	{"fn": "cv-func-22l-7922", "path": "/index.html", "status": 200, "ms": 23.8}
+2026-10-25T18:07:41.568000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: 4b162025-83dc-4acd-9166-a61a3842dca8
+2026-10-25T18:07:41.568000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: 4b162025-83dc-4acd-9166-a61a3842dca8	Duration: 34.19 ms	Billed Duration: 35 ms	Memory Size: 128 MB	Max Memory Used: 95 MB
+2026-10-25T18:07:41.610000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: 03f60dad-4e42-4686-b802-387174213f48 Version: $LATEST
+2026-10-25T18:07:41.646000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:41.646Z	03f60dad-4e42-4686-b802-387174213f48	{"fn": "cv-func-22l-7922", "path": "/style.css", "status": 200, "ms": 35.32}
+2026-10-25T18:07:41.648000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: 03f60dad-4e42-4686-b802-387174213f48
+2026-10-25T18:07:41.648000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: 03f60dad-4e42-4686-b802-387174213f48	Duration: 37.28 ms	Billed Duration: 38 ms	Memory Size: 128 MB	Max Memory Used: 95 MB
+2026-10-25T18:07:41.682000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: f2d63547-bb26-4891-9303-b915795b9dbd Version: $LATEST
+2026-10-25T18:07:41.713000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:41.713Z	f2d63547-bb26-4891-9303-b915795b9dbd	{"fn": "cv-func-22l-7922", "path": "/cv.pdf", "status": 200, "ms": 29.93}
+2026-10-25T18:07:41.728000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: f2d63547-bb26-4891-9303-b915795b9dbd
+2026-10-25T18:07:41.728000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: f2d63547-bb26-4891-9303-b915795b9dbd	Duration: 44.48 ms	Billed Duration: 45 ms	Memory Size: 128 MB	Max Memory Used: 95 MB
+2026-10-25T18:07:41.748000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: a690f54e-8cbf-40a1-af0b-5885ec74455d Version: $LATEST
+2026-10-25T18:07:41.748000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:41.748Z	a690f54e-8cbf-40a1-af0b-5885ec74455d	{"fn": "cv-func-22l-7922", "path": "/does-not-exist", "status": 404, "ms": 0.01}
+2026-10-25T18:07:41.750000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: a690f54e-8cbf-40a1-af0b-5885ec74455d
+2026-10-25T18:07:41.750000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: a690f54e-8cbf-40a1-af0b-5885ec74455d	Duration: 1.65 ms	Billed Duration: 2 ms	Memory Size: 128 MB	Max Memory Used: 95 MB
+2026-10-25T18:07:59.089000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e START RequestId: 8d90f84f-4044-4cd3-ad2a-0c8222093e59 Version: $LATEST
+2026-10-25T18:07:59.416000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e [INFO]	2026-10-25T18:07:59.415Z	8d90f84f-4044-4cd3-ad2a-0c8222093e59	{"fn": "cv-func-22l-7922", "path": "/", "status": 200, "ms": 323.81}
+2026-10-25T18:07:59.448000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e END RequestId: 8d90f84f-4044-4cd3-ad2a-0c8222093e59
+2026-10-25T18:07:59.449000+00:00 2026/10/25/[$LATEST]ff591590389f479e9f85720da1897b6e REPORT RequestId: 8d90f84f-4044-4cd3-ad2a-0c8222093e59	Duration: 358.32 ms	Billed Duration: 359 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:13:56.044000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb INIT_START Runtime Version: python:3.12.mainlinev2.v43	Runtime Version ARN: arn:aws:lambda:ap-southeast-2::runtime:36aeb19f3326e129d9f096dea0a3c6a9ca8dce2610e62d2b2060747602d863ae
+2026-10-25T18:13:56.597000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb START RequestId: 88354d1d-af06-4613-98e3-5bbd143e32fb Version: $LATEST
+2026-10-25T18:13:56.905000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb [INFO]	2026-10-25T18:13:56.905Z	88354d1d-af06-4613-98e3-5bbd143e32fb	{"fn": "cv-func-22l-7922", "path": "/", "status": 200, "ms": 307.68}
+2026-10-25T18:13:56.938000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb END RequestId: 88354d1d-af06-4613-98e3-5bbd143e32fb
+2026-10-25T18:13:56.938000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb REPORT RequestId: 88354d1d-af06-4613-98e3-5bbd143e32fb	Duration: 340.74 ms	Billed Duration: 890 ms	Memory Size: 128 MB	Max Memory Used: 96 MB	Init Duration: 548.80 ms
+2026-10-25T18:13:57.482000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb START RequestId: 0eb888ce-1cbf-4481-94f8-e3ddbcc8657c Version: $LATEST
+2026-10-25T18:13:57.516000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb [INFO]	2026-10-25T18:13:57.516Z	0eb888ce-1cbf-4481-94f8-e3ddbcc8657c	{"fn": "cv-func-22l-7922", "path": "/style.css", "status": 200, "ms": 33.22}
+2026-10-25T18:13:57.518000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb END RequestId: 0eb888ce-1cbf-4481-94f8-e3ddbcc8657c
+2026-10-25T18:13:57.518000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb REPORT RequestId: 0eb888ce-1cbf-4481-94f8-e3ddbcc8657c	Duration: 35.31 ms	Billed Duration: 36 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:13:57.933000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb START RequestId: 7685e68e-f700-4f49-9bff-351438924585 Version: $LATEST
+2026-10-25T18:13:57.934000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb [INFO]	2026-10-25T18:13:57.934Z	7685e68e-f700-4f49-9bff-351438924585	{"fn": "cv-func-22l-7922", "path": "/favicon.ico", "status": 404, "ms": 0.01}
+2026-10-25T18:13:57.935000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb END RequestId: 7685e68e-f700-4f49-9bff-351438924585
+2026-10-25T18:13:57.935000+00:00 2026/10/25/[$LATEST]b0d1da7bc5244ba18c35fc2c746e0dbb REPORT RequestId: 7685e68e-f700-4f49-9bff-351438924585	Duration: 1.75 ms	Billed Duration: 2 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:35:31.734000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 INIT_START Runtime Version: python:3.12.mainlinev2.v43	Runtime Version ARN: arn:aws:lambda:ap-southeast-2::runtime:36aeb19f3326e129d9f096dea0a3c6a9ca8dce2610e62d2b2060747602d863ae
+2026-10-25T18:35:32.249000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: 839e99ed-9b08-4269-a561-07b239bda319 Version: $LATEST
+2026-10-25T18:35:32.546000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:35:32.546Z	839e99ed-9b08-4269-a561-07b239bda319	{"fn": "cv-func-22l-7922", "path": "/", "status": 200, "ms": 296.48}
+2026-10-25T18:35:32.566000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: 839e99ed-9b08-4269-a561-07b239bda319
+2026-10-25T18:35:32.566000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: 839e99ed-9b08-4269-a561-07b239bda319	Duration: 316.45 ms	Billed Duration: 829 ms	Memory Size: 128 MB	Max Memory Used: 96 MB	Init Duration: 511.82 ms
+2026-10-25T18:35:33.082000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: b29ab274-5d89-4876-b069-2e50b13f840c Version: $LATEST
+2026-10-25T18:35:33.114000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:35:33.114Z	b29ab274-5d89-4876-b069-2e50b13f840c	{"fn": "cv-func-22l-7922", "path": "/style.css", "status": 200, "ms": 31.28}
+2026-10-25T18:35:33.126000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: b29ab274-5d89-4876-b069-2e50b13f840c
+2026-10-25T18:35:33.126000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: b29ab274-5d89-4876-b069-2e50b13f840c	Duration: 43.78 ms	Billed Duration: 44 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:36:44.042000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: d2574a9e-d74c-4679-8240-8bb24dcbb7b1 Version: $LATEST
+2026-10-25T18:36:44.259000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:36:44.259Z	d2574a9e-d74c-4679-8240-8bb24dcbb7b1	{"fn": "cv-func-22l-7922", "path": "/", "status": 200, "ms": 217.21}
+2026-10-25T18:36:44.268000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: d2574a9e-d74c-4679-8240-8bb24dcbb7b1
+2026-10-25T18:36:44.268000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: d2574a9e-d74c-4679-8240-8bb24dcbb7b1	Duration: 226.22 ms	Billed Duration: 227 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:36:44.319000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: 73914c7e-a03e-477b-8044-49c7693ddc7f Version: $LATEST
+2026-10-25T18:36:44.374000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:36:44.374Z	73914c7e-a03e-477b-8044-49c7693ddc7f	{"fn": "cv-func-22l-7922", "path": "/style.css", "status": 200, "ms": 54.61}
+2026-10-25T18:36:44.388000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: 73914c7e-a03e-477b-8044-49c7693ddc7f
+2026-10-25T18:36:44.388000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: 73914c7e-a03e-477b-8044-49c7693ddc7f	Duration: 68.39 ms	Billed Duration: 69 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:36:44.407000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: ebfdb41c-fa35-452d-8f1c-1d6bce4d39ad Version: $LATEST
+2026-10-25T18:36:44.484000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:36:44.484Z	ebfdb41c-fa35-452d-8f1c-1d6bce4d39ad	{"fn": "cv-func-22l-7922", "path": "/cv.pdf", "status": 200, "ms": 77.14}
+2026-10-25T18:36:44.488000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: ebfdb41c-fa35-452d-8f1c-1d6bce4d39ad
+2026-10-25T18:36:44.488000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: ebfdb41c-fa35-452d-8f1c-1d6bce4d39ad	Duration: 80.45 ms	Billed Duration: 81 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+2026-10-25T18:36:44.520000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 START RequestId: f6386575-9fd6-411c-83d7-1e4afa2852e6 Version: $LATEST
+2026-10-25T18:36:44.521000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 [INFO]	2026-10-25T18:36:44.521Z	f6386575-9fd6-411c-83d7-1e4afa2852e6	{"fn": "cv-func-22l-7922", "path": "/anything", "status": 404, "ms": 0.01}
+2026-10-25T18:36:44.522000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 END RequestId: f6386575-9fd6-411c-83d7-1e4afa2852e6
+2026-10-25T18:36:44.522000+00:00 2026/10/25/[$LATEST]6220d08741014332be5f215dd9897ca1 REPORT RequestId: f6386575-9fd6-411c-83d7-1e4afa2852e6	Duration: 1.63 ms	Billed Duration: 2 ms	Memory Size: 128 MB	Max Memory Used: 96 MB
+== log-retention ==
+[
+    {
+        "name": "/aws/lambda/cv-func-22l-7922",
+        "days": 7
+    }
+]

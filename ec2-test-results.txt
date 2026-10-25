@@ -1,0 +1,15 @@
+EC2 Instance: i-03da7b9c6666bf0a1
+EC2 Website: http://16.176.169.190/
+
+S3 synchronization results:
+2026-10-25T17:23:14+00:00 OK: synced i-03da7b9c6666bf0a1
+2026-10-25T17:31:29+00:00 OK: synced i-03da7b9c6666bf0a1
+2026-10-25T17:32:03+00:00 OK: synced i-03da7b9c6666bf0a1
+
+S3 write test:
+Command: aws s3 cp /tmp/denied-test.txt s3://cv-22l-7922/site/denied-test.txt
+Result: AccessDenied (s3:PutObject not permitted)
+
+Automatic synchronization:
+systemd cv-sync.timer enabled
+Schedule: Every five minutes

@@ -9,8 +9,8 @@ section caller; run aws sts get-caller-identity
 section public-access; run aws s3api get-public-access-block --bucket "$BUCKET"
 section versioning; run aws s3api get-bucket-versioning --bucket "$BUCKET"
 section objects; run aws s3 ls "s3://$BUCKET/site/" --recursive
-section ec2-policy; run aws iam get-role-policy --role-name "cv-ec2-role-$ROLL" --policy-name CVEC2ReadSite
-section lambda-policy; run aws iam list-attached-role-policies --role-name "cv-lambda-role-$ROLL"; run aws iam get-role-policy --role-name "cv-lambda-role-$ROLL" --policy-name CVLambdaReadSite
+section ec2-policy; run aws iam get-role-policy --role-name "cv-ec2-role-$ROLL" --policy-name CVSiteReadOnly
+section lambda-policy; run aws iam list-attached-role-policies --role-name "cv-lambda-role-$ROLL"; run aws iam get-role-policy --role-name "cv-lambda-role-$ROLL" --policy-name CVSiteReadOnly
 section security-group
 SG=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=cv-ec2-$ROLL" "Name=instance-state-name,Values=running" --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId' --output text 2>>"$OUT")
 if [[ "$SG" != None && -n "$SG" ]]; then run aws ec2 describe-security-groups --group-ids "$SG"; else echo 'COMMAND FAILED: security group not found' >> "$OUT"; fi
