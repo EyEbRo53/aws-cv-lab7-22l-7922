@@ -1,81 +1,165 @@
 # Lab 7 — Host Your CV on AWS
 
-**Student:** Hassan Yousaf  
-**Roll:** 22L-7922  
+**Name:** Hassan Yousaf  
+**Roll Number:** 22L-7922  
 **Email:** l227922@lhr.nu.edu.pk  
-**Region:** ap-southeast-2 (Sydney)
+**AWS Region:** ap-southeast-2 (Sydney)
 
-## Architecture
+## 1. Overview
+
+In this lab, I hosted my CV using two AWS services: EC2 and Lambda. Both websites use the same files stored in a private S3 bucket.
+
+The EC2 version runs on an Amazon Linux 2023 instance using Apache, while the Lambda version serves the files directly from S3 through a public Function URL.
+
+## 2. Architecture
 
 ```text
-Browser ──HTTP──> EC2 (Apache, local copy of CV) ──IAM role──> private S3/site/
-        └─HTTPS──> Lambda Function URL ──IAM role──> private S3/site/
+                     Private S3 Bucket
+                        cv-22l-7922
+                        /site/
+                           |
+                  +--------+--------+
+                  |                 |
+              IAM Role          IAM Role
+                  |                 |
+                 EC2              Lambda
+               Apache          Function URL
+                  |                 |
+                HTTP              HTTPS
+                  |                 |
+                  +--------+--------+
+                           |
+                         Browser
 ```
 
-For the EC2 path, the browser connects to Apache on the instance, which serves a local copy of the CV synchronized from S3 every five minutes. For the Lambda path, the browser calls the public function URL and the function reads the requested object directly from private S3.
+The S3 bucket contains three files:
 
-## Live endpoints
-- EC2: http://16.176.169.190/
-- Lambda: https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/
-- Direct S3 object: https://cv-22l-7922.s3.amazonaws.com/site/index.html (HTTP 403)
+- `site/index.html` — CV webpage
+- `site/style.css` — Website styling
+- `site/cv.pdf` — Downloadable CV
 
-## Access denied test
+The bucket is private, and both EC2 and Lambda use IAM roles with read-only access to the required files.
 
-The following command was run on the EC2 instance:
+## 3. Website Links
 
-    aws s3 cp /tmp/denied-test.txt s3://cv-22l-7922/site/denied-test.txt
+**EC2 Website:**  
+http://16.176.169.190/
 
-Result: AccessDenied. The EC2 IAM role does not permit s3:PutObject.
+**Lambda Website:**  
+https://bficwk25gle5bhlpkp5rjgphja0zciht.lambda-url.ap-southeast-2.on.aws/
 
-## EC2 synchronization
+**Private S3 Object:**  
+https://cv-22l-7922.s3.amazonaws.com/site/index.html
 
-The EC2 instance runs Apache and synchronizes its local CV files
-from private S3 using a systemd timer every five minutes.
+Opening the S3 object directly returns HTTP 403 because public access to the bucket is blocked.
 
-Recorded successful synchronization entries:
+## 4. EC2 Deployment
 
-    2026-10-25T17:23:14+00:00 OK: synced i-03da7b9c6666bf0a1
-    2026-10-25T17:31:29+00:00 OK: synced i-03da7b9c6666bf0a1
-    2026-10-25T17:32:03+00:00 OK: synced i-03da7b9c6666bf0a1
+I launched a `t3.micro` EC2 instance using Amazon Linux 2023 and installed Apache to serve the CV website.
 
-See ec2-test-results.txt for the recorded test results.
+The instance uses an IAM role to download files from the private S3 bucket. A systemd timer runs the synchronization script every five minutes, allowing changes made in S3 to appear on the EC2 website automatically.
 
-## Written answers
+The security group allows inbound HTTP traffic on port 80. SSH access was removed after configuration, and IMDSv2 is required for instance metadata.
 
-**1. Why roles rather than access keys?**  
-IAM roles give EC2 and Lambda temporary credentials automatically. Hardcoded access keys can be stolen from scripts or instance user data and used to access AWS resources. Roles avoid storing long-lived credentials.
+**EC2 Instance ID:** `i-03da7b9c6666bf0a1`
 
-**2. What happens if someone opens the direct S3 URL?**  
-They receive an AccessDenied response. All four S3 Block Public Access settings are enabled, and no public read permission is granted.
+### Synchronization logs
 
-**3. Why is the function URL public but the bucket private?**  
-The Lambda function URL has a resource-based permission that allows unauthenticated public invocation. This is acceptable because the function serves only the intended CV paths; the S3 bucket remains private and is accessed using the function's restricted IAM role.
+The following successful entries were recorded in `/var/log/cv-sync.log`:
 
-**4. Compare idle cost and traffic growth.**  
-EC2 can incur compute and public IPv4 charges while running even if nobody visits. Lambda charges depend mainly on invocations and execution time, with any applicable free allowances; S3 storage also has costs. With much higher traffic, Lambda scales automatically subject to limits and costs, while a single EC2 instance may become overloaded.
+```text
+2026-10-25T17:23:14+00:00 OK: synced i-03da7b9c6666bf0a1
+2026-10-25T17:31:29+00:00 OK: synced i-03da7b9c6666bf0a1
+2026-10-25T17:32:03+00:00 OK: synced i-03da7b9c6666bf0a1
+```
 
-**5. What if EC2 is deleted?**  
-The instance, its local web files, its public IP, and its web endpoint are lost. The private S3 bucket and its files, the Lambda function and its URL, and IAM roles remain unless separately deleted.
+Additional EC2 test details are saved in `ec2-test-results.txt`.
 
-## Evidence
-Run `./collect-evidence.sh cv-22l-7922 http://EC2_PUBLIC_IP https://LAMBDA_FUNCTION_URL` from a configured AWS CLI environment in the class region. Commit the resulting `evidence.txt`. **Do not fabricate evidence or commit credentials.**
+## 5. IAM Permission Test
 
-## Sources and adaptation
-Assignment requirements: *Lab 7 - Basic App Deployment on AWS*, provided by instructor. Starter scripts and text generated with AI assistance; reviewed and adapted by student before submission. AWS deployment was completed and tested.
+To check that the EC2 instance could not modify the S3 bucket, I attempted to upload a file from the instance:
 
-## Deployment verification
+```bash
+aws s3 cp /tmp/denied-test.txt s3://cv-22l-7922/site/denied-test.txt
+```
 
-- EC2 and Lambda websites return HTTP 200.
-- HTML, CSS, and PDF are served successfully.
-- Unknown Lambda paths return HTTP 404.
-- Direct S3 object access returns HTTP 403.
-- EC2 security group has inbound port 80 only.
-- EC2 S3 write attempt returned AccessDenied.
-- Lambda CloudWatch log retention is seven days.
-- Evidence collected in evidence.txt.
+**Result:** `AccessDenied`
 
-## GitHub repository
+The upload was blocked because the EC2 IAM role does not have `s3:PutObject` permission. This confirmed that the instance could read the CV files without being allowed to change the contents of the bucket.
 
-https://github.com/EyEbRo53/aws-cv-lab7-22l-7922
+## 6. Lambda Deployment
 
-Keep the deployed services running until grading is complete.
+I created a Python 3.12 Lambda function named `cv-func-22l-7922`.
+
+The function retrieves the requested file from S3 and returns it through a public Function URL. It handles the HTML page, CSS file, and PDF with their appropriate content types.
+
+The function also replaces the hosting placeholder in the HTML footer with its Lambda function name.
+
+**Configuration:**
+
+- Memory: 128 MB
+- Timeout: 10 seconds
+- Authentication: NONE (public Function URL)
+- S3 access: Read-only IAM role
+- CloudWatch log retention: 7 days
+
+The function records the function name, requested path, response status, and execution time in CloudWatch.
+
+## 7. Testing Results
+
+I tested the websites using `curl` from AWS CloudShell.
+
+| Test | Result |
+|---|---|
+| EC2 homepage | HTTP 200 |
+| EC2 CSS | HTTP 200 |
+| EC2 PDF | HTTP 200 |
+| Lambda homepage | HTTP 200 |
+| Lambda CSS | HTTP 200 |
+| Lambda PDF | HTTP 200 |
+| Invalid Lambda path | HTTP 404 |
+| Direct S3 object access | HTTP 403 |
+| EC2 S3 upload attempt | AccessDenied |
+
+The tests confirmed that both websites could serve the CV while the S3 bucket remained private.
+
+The AWS configuration and command outputs are saved in `evidence.txt`, generated using `collect-evidence.sh`.
+
+## 8. Lab Questions
+
+### Q1. Why use IAM roles instead of access keys?
+
+IAM roles provide temporary credentials to EC2 and Lambda without storing access keys in the application code. This is safer because there are no permanent credentials to expose accidentally. Permissions can also be limited to exactly what the application needs.
+
+### Q2. What happens when someone opens the S3 object URL directly?
+
+They receive HTTP 403 (AccessDenied). The S3 bucket has Block Public Access enabled, so its files cannot be accessed directly by anonymous users.
+
+### Q3. Why is the Lambda Function URL public while the S3 bucket is private?
+
+The Function URL needs to be public so visitors can open the CV without signing in to AWS. The bucket remains private because visitors should access the files through the Lambda function, not directly through S3. Lambda uses its IAM role to read only the required files.
+
+### Q4. How do EC2 and Lambda compare in terms of idle cost and increasing traffic?
+
+EC2 can incur charges while the instance is running, even when nobody visits the website. Lambda generally charges based on requests and execution time, so it can be more economical for a website with very little traffic.
+
+When traffic increases, Lambda can automatically handle more concurrent requests within its service limits. A single EC2 instance has fixed resources and may need additional instances or scaling configuration to handle heavier traffic.
+
+### Q5. What happens if the EC2 instance is deleted?
+
+The EC2-hosted website becomes unavailable because Apache and the local CV files were running on that instance. Its public IP address is also lost.
+
+However, the files in S3 and the Lambda website remain available because they are separate AWS resources. A new EC2 instance could be configured to download the same CV files again.
+
+## 9. Repository Files
+
+| File or folder | Purpose |
+|---|---|
+| `site/` | HTML, CSS, and PDF CV files |
+| `ec2/` | EC2 setup and synchronization scripts |
+| `lambda/` | Python Lambda function |
+| `iam/` | IAM trust and permission policies |
+| `collect-evidence.sh` | Collects AWS configuration and test results |
+| `evidence.txt` | Collected deployment evidence |
+| `ec2-test-results.txt` | Recorded EC2 tests |
+| `DEPLOYMENT.md` | Deployment instructions |
