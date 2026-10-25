@@ -1,0 +1,2 @@
+== NOT COLLECTED ==
+This is a starter placeholder. Run collect-evidence.sh in your AWS account and commit the generated evidence.txt before submission.
